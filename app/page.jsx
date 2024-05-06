@@ -1,9 +1,9 @@
-import Rectangular from './ui/rectangular/rectangular';
+
 
 const HomePage = () => {
   return (
-    <div className='flex items-center justify-center'>
-      <Rectangular />
+    <div className='mt-4 flex items-center justify-center'>
+      HomePage
     </div>
   );
 };

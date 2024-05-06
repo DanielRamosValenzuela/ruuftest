@@ -3,45 +3,44 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
-import { FiMenu } from 'react-icons/fi';
 import { IoCloseOutline } from 'react-icons/io5';
 import clsx from 'clsx';
+import { IoTriangleSharp } from 'react-icons/io5';
+import { MdRectangle } from 'react-icons/md';
+import { HiMiniRectangleGroup } from "react-icons/hi2";
 
 const Navbar = () => {
   const [isSideMenuOpen, setMenu] = useState(false);
 
-  const navlinks = [
+  const menuItems = [
     {
-      labe: 'Techo rectangular',
-      link: '#',
+      label: 'Techo rectangular',
+      link: '/dashboard/rectangular',
+      icon: <MdRectangle />,
     },
     {
-      labe: 'Techo triangular',
-      link: '#',
+      label: 'Techo triangular',
+      link: '/dashboard/triangular',
+      icon: <IoTriangleSharp />,
     },
     {
-      labe: 'Techo superpuestos',
-      link: '#',
-    }
+      label: 'Techo superpuestos',
+      link: '/dashboard/overlapping',
+      icon: <HiMiniRectangleGroup />,
+    },
   ];
 
   return (
     <div>
       <nav className='flex justify-center px-8 items-center py-6'>
         <div className='flex items-center gap-8'>
-          <section className='flex items-center gap-4'>
-            <FiMenu
-              onClick={() => setMenu(true)}
-              className='text-3xl cursor-pointer lg:hidden'
-            />
-          </section>
-          {navlinks.map((d, i) => (
+          {menuItems.map((menu, i) => (
             <Link
               key={i}
               className='hidden lg:block  text-gray-400 hover:text-black'
-              href={d.link}
+              href={menu.link}
             >
-              {d.labe}
+              {menu.icon} {menu.label}
             </Link>
           ))}
         </div>
@@ -57,15 +56,15 @@ const Navbar = () => {
               className='mt-0 mb-8 text-3xl cursor-pointer'
             />
 
-            {navlinks.map((d, i) => (
-              <Link key={i} className='font-bold' href={d.link}>
-                {d.labe}
+            {menuItems.map((menu, i) => (
+              <Link key={i} className='font-bold' href={menu.link}>
+                {menu.label}
               </Link>
             ))}
           </section>
         </div>
       </nav>
-      <hr className=' ' />
+      <hr />
     </div>
   );
 };
