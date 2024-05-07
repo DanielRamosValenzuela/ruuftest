@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Layer, Rect, Stage } from 'react-konva';
 
-
 const RectangularForm = () => {
   const [inputs, setInputs] = useState({
     roofWidth: '',
@@ -11,196 +10,189 @@ const RectangularForm = () => {
     panelWidth: '',
     panelHeight: '',
   });
+  const [calculatedInputs, setCalculatedInputs] = useState({
+    roofWidth: '',
+    roofHeight: '',
+    panelWidth: '',
+    panelHeight: '',
+  });
   const [result, setResult] = useState(null);
+  const [scale, setScale] = useState(null);
 
-  const handleChange = (event) => {
+  const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setInputs((prevInputs) => ({
-      ...prevInputs,
-      [name]: value,
-    }));
+    setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
 
   const calculatePanels = () => {
-    const w = Number(inputs.roofWidth);
-    const h = Number(inputs.roofHeight);
-    const pw = Number(inputs.panelWidth);
-    const ph = Number(inputs.panelHeight);
+    const { roofWidth, roofHeight, panelWidth, panelHeight } = inputs;
+    const w = parseInt(roofWidth);
+    const h = parseInt(roofHeight);
+    const pw = parseInt(panelWidth);
+    const ph = parseInt(panelHeight);
 
-    // Horizontal placement and vertical placement in remaining space
-    const horizontalPanels = Math.floor(w / pw);
-    const verticalPanels = Math.floor(h / ph);
-    const remainingWidth = w - horizontalPanels * pw;
-    const remainingHeight = h - verticalPanels * ph;
+    // Cálculo de paneles en ambas orientaciones
+    let primaryHorizontal = Math.floor(w / pw) * Math.floor(h / ph);
+    let remainingWidthHorizontal = w % pw;
+    let remainingHeightHorizontal = h % ph;
+    let secondaryVertical =
+      Math.floor(remainingWidthHorizontal / ph) * Math.floor(h / pw) +
+      Math.floor(remainingHeightHorizontal / pw) * Math.floor(w / ph);
 
-    const additionalPanelsV =
-      remainingWidth > 0
-        ? Math.floor(h / ph) * Math.floor(remainingWidth / ph)
-        : 0;
-    const additionalPanelsH =
-      remainingHeight > 0
-        ? Math.floor(w / pw) * Math.floor(remainingHeight / pw)
-        : 0;
+    let primaryVertical = Math.floor(w / ph) * Math.floor(h / pw);
+    let remainingWidthVertical = w % ph;
+    let remainingHeightVertical = h % pw;
+    let secondaryHorizontal =
+      Math.floor(remainingWidthVertical / pw) * Math.floor(h / ph) +
+      Math.floor(remainingHeightVertical / ph) * Math.floor(w / pw);
 
-    // Consider vertical placement first and then horizontal
-    const verticalFirstPanels = Math.floor(w / ph);
-    const horizontalFirstPanels = Math.floor(h / pw);
-    const remainingWidthFirst = w - verticalFirstPanels * ph;
-    const remainingHeightFirst = h - horizontalFirstPanels * pw;
-
-    const additionalPanelsFirstV =
-      remainingWidthFirst > 0
-        ? Math.floor(h / pw) * Math.floor(remainingWidthFirst / pw)
-        : 0;
-    const additionalPanelsFirstH =
-      remainingHeightFirst > 0
-        ? Math.floor(w / ph) * Math.floor(remainingHeightFirst / ph)
-        : 0;
-
-    // Calculate the maximum panels that can fit
-    const maxPanels = Math.max(
-      horizontalPanels * verticalPanels + additionalPanelsV + additionalPanelsH,
-      verticalFirstPanels * horizontalFirstPanels +
-        additionalPanelsFirstV +
-        additionalPanelsFirstH
+    setResult(
+      Math.max(
+        primaryHorizontal + secondaryVertical,
+        primaryVertical + secondaryHorizontal
+      )
     );
+    const maxScaleWidth = 800;
+    const maxScaleHeight = 600;
 
-    setResult({
-      count: maxPanels,
-      layout: {
-        roofWidth: w,
-        roofHeight: h,
-        panelWidth: pw,
-        panelHeight: ph,
-        horizontalPanels,
-        verticalPanels,
-        additionalPanelsV,
-        additionalPanelsH,
-        additionalPanelsFirstV,
-        additionalPanelsFirstH,
-      },
-    });
+    const scaleWidth = maxScaleWidth / calculatedInputs.roofWidth;
+    const scaleHeight = maxScaleHeight / calculatedInputs.roofHeight;
+    setCalculatedInputs(inputs);
+    setScale(Math.min(scaleWidth, scaleHeight));
   };
 
   return (
-    <div className='max-w-md mx-auto mt-10'>
-      <div className='mb-5'>
-        <label className='block font-medium mb-2'>Dimensiones del techo:</label>
-        <input
-          type='number'
-          name='roofWidth'
-          placeholder='Ancho'
-          className='border p-2 mr-2 rounded'
-          value={inputs.roofWidth}
-          onChange={handleChange}
-        />
-        <input
-          type='number'
-          name='roofHeight'
-          placeholder='Largo'
-          className='border p-2 rounded'
-          value={inputs.roofHeight}
-          onChange={handleChange}
-        />
-      </div>
-      <div className='mb-5'>
-        <label className='block font-medium mb-2'>
-          Dimensiones de los paneles solares:
-        </label>
-        <input
-          type='number'
-          name='panelWidth'
-          placeholder='Ancho'
-          className='border p-2 mr-2 rounded'
-          value={inputs.panelWidth}
-          onChange={handleChange}
-        />
-        <input
-          type='number'
-          name='panelHeight'
-          placeholder='Largo'
-          className='border p-2 rounded'
-          value={inputs.panelHeight}
-          onChange={handleChange}
-        />
-      </div>
-      <button
-        className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-        onClick={calculatePanels}
-      >
-        Calcular
-      </button>
-      {result && (
-        <div className='mt-4'>
-          <p className='text-lg'>
-            Paneles posibles: <span className='font-bold'>{result.count}</span>
-          </p>
-          <Stage width={300} height={200}>
-            <Layer>
-              {Array.from({ length: result.layout.verticalPanels }).map(
-                (_, i) =>
-                  Array.from({ length: result.layout.horizontalPanels }).map(
-                    (_, j) => (
-                      <Rect
-                        x={
-                          (j * result.layout.panelWidth * 300) /
-                          result.layout.roofWidth
-                        }
-                        y={
-                          (i * result.layout.panelHeight * 200) /
-                          result.layout.roofHeight
-                        }
-                        width={
-                          (result.layout.panelWidth * 300) /
-                          result.layout.roofWidth
-                        }
-                        height={
-                          (result.layout.panelHeight * 200) /
-                          result.layout.roofHeight
-                        }
-                        fill='lightblue'
-                        stroke='black'
-                        strokeWidth={1}
-                      />
-                    )
-                  )
-              )}
-              {result.layout.additionalPanelsV &&
-                Array.from({ length: result.layout.additionalPanelsV }).map(
-                  (_, idx) => (
+    <div className='flex flex-col items-center justify-center mt-5'>
+      <div className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col'>
+        <div className='mb-4'>
+          <label
+            className='block text-grey-darker text-sm font-bold mb-2'
+            htmlFor='roofWidth'
+          >
+            Ancho del techo (metros)
+          </label>
+          <input
+            className='shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker'
+            id='roofWidth'
+            name='roofWidth'
+            type='number'
+            placeholder='Ancho'
+            value={inputs.roofWidth}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-4'>
+          <label
+            className='block text-grey-darker text-sm font-bold mb-2'
+            htmlFor='roofHeight'
+          >
+            Alto del techo (metros)
+          </label>
+          <input
+            className='shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker'
+            id='roofHeight'
+            name='roofHeight'
+            type='number'
+            placeholder='Alto'
+            value={inputs.roofHeight}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-4'>
+          <label
+            className='block text-grey-darker text-sm font-bold mb-2'
+            htmlFor='panelWidth'
+          >
+            Ancho del panel solar (metros)
+          </label>
+          <input
+            className='shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker'
+            id='panelWidth'
+            name='panelWidth'
+            type='number'
+            placeholder='Ancho del panel'
+            value={inputs.panelWidth}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-4'>
+          <label
+            className='block text-grey-darker text-sm font-bold mb-2'
+            htmlFor='panelHeight'
+          >
+            Alto del panel solar (metros)
+          </label>
+          <input
+            className='shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker'
+            id='panelHeight'
+            name='panelHeight'
+            type='number'
+            placeholder='Alto del panel'
+            value={inputs.panelHeight}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='flex items-center justify-between'>
+          <button
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full'
+            type='button'
+            onClick={calculatePanels}
+          >
+            Calcular
+          </button>
+        </div>
+        {result !== null && (
+          <div className='flex flex-col items-center justify-center gap-4'>
+            <div
+              className='mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative w-4/5 '
+              role='alert'
+            >
+              <strong className='font-bold'>Resultado: </strong>
+              <span className='block sm:inline'>
+                {result} paneles pueden ser colocados.
+              </span>
+            </div>
+            <div>
+              <Stage
+                width={calculatedInputs.roofWidth * scale}
+                height={calculatedInputs.roofHeight * scale}
+              >
+                <Layer>
+                  {[...Array(result)].map((_, i) => (
                     <Rect
+                      key={i}
                       x={
-                        ((result.layout.horizontalPanels *
-                          result.layout.panelWidth +
-                          (idx % result.layout.horizontalPanels) *
-                            result.layout.panelHeight) *
-                          300) /
-                        result.layout.roofWidth
+                        (i %
+                          Math.floor(
+                            calculatedInputs.roofWidth /
+                              calculatedInputs.panelWidth
+                          )) *
+                        calculatedInputs.panelWidth *
+                        scale
                       }
                       y={
-                        (Math.floor(idx / result.layout.horizontalPanels) *
-                          result.layout.panelHeight *
-                          200) /
-                        result.layout.roofHeight
+                        Math.floor(
+                          i /
+                            Math.floor(
+                              calculatedInputs.roofWidth /
+                                calculatedInputs.panelWidth
+                            )
+                        ) *
+                        calculatedInputs.panelHeight *
+                        scale
                       }
-                      width={
-                        (result.layout.panelHeight * 300) /
-                        result.layout.roofWidth
-                      }
-                      height={
-                        (result.layout.panelHeight * 200) /
-                        result.layout.roofHeight
-                      }
-                      fill='red'
+                      width={calculatedInputs.panelWidth * scale}
+                      height={calculatedInputs.panelHeight * scale}
+                      fill='yellow'
                       stroke='black'
-                      strokeWidth={1}
                     />
-                  )
-                )}
-            </Layer>
-          </Stage>
-        </div>
-      )}
+                  ))}
+                </Layer>
+              </Stage>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

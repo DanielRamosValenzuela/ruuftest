@@ -1,9 +1,12 @@
-import React from 'react'
+import TriangleForm from '@/app/ui/triangular/TriangleForm';
+import React from 'react';
 
 const TriangularPage = () => {
   return (
-    <div>TriangularPage</div>
-  )
-}
+    <div className='flex items-center justify-center'>
+      <TriangleForm />
+    </div>
+  );
+};
 
-export default TriangularPage
+export default TriangularPage;
