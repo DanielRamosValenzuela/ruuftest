@@ -1,11 +1,7 @@
-
+import { redirect } from "next/navigation";
 
 const HomePage = () => {
-  return (
-    <div className='mt-4 flex items-center justify-center'>
-      HomePage
-    </div>
-  );
+  redirect('/dashboard/rectangular')
 };
 
 export default HomePage;

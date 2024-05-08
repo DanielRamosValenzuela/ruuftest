@@ -1,9 +1,7 @@
-import React from 'react'
+import React from 'react';
 
 const OverlappingPage = () => {
-  return (
-    <div>OverlappingPage</div>
-  )
-}
+  return <div className='flex items-center justify-center'>Overlapping</div>;
+};
 
-export default OverlappingPage
+export default OverlappingPage;
